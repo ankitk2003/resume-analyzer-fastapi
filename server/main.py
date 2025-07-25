@@ -3,9 +3,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from server.db.database import get_db, Base, engine
-from server.routes import user_routes
+from server.routes import user_routes,resume_routes
 from server.models.resume_model import Resume
 from server.models.user_model import User, Email
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="FastAPI Auth Project",
@@ -15,6 +16,8 @@ app = FastAPI(
 
 # Include routes
 app.include_router(user_routes.router)
+app.include_router(resume_routes.router)
+app.mount("/files", StaticFiles(directory="uploads"), name="files")
 
 # CORS middleware (optional: customize origins for security)
 app.add_middleware(

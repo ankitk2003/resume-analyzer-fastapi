@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Depends, APIRouter
+from fastapi import FastAPI, Depends, APIRouter, UploadFile, File
 from server.schemas.user_schema import UserSignup, UserLogin, UserResponse
 from sqlalchemy.orm import Session
 from server.db.database import get_db
 from server.controllers.user_controllers import sign_up, verify_user_by_otp, user_login
 from server.auth_helpers.auth import oauth2_scheme, get_current_user
 from server.models.user_model import User
+from server.controllers.resume_controller import handle_pdf_upload
 
 router = APIRouter(prefix="/user", tags=["User"])
 
@@ -25,6 +26,11 @@ def verify_otp(otp: int, db: Session = Depends(get_db)):
 def login(user: UserLogin, db: Session = Depends(get_db)):
     token = user_login(user, db)
     return token
+
+
+# @router.post("/upload")
+# def upload_route(file: UploadFile = File(...),current_user=Depends(get_current_user)):
+#     return handle_pdf_upload(file,current_user)
 
 
 # @router.get("/profile",response_model=UserResponse)      #this is just for testing purpose
