@@ -9,11 +9,11 @@ from server.auth_helpers.auth import (
     verify_password,
     create_access_token,
 )
-
+from server.models.recruiter_model import Recruiter
 
 def sign_up(user: UserSignup, db: Session):
     existing_user = (
-        db.query(user_model.Email).filter(user_model.User.email == user.email).first()
+        db.query(Recruiter.email).filter(Recruiter.email == user.email).first()
     )
     if existing_user:
         return None
@@ -36,7 +36,7 @@ def verify_user_by_otp(otp: int, db: Session):
     )
     if not existing_user:
         return {"message": "register fisrt"}
-    db_user = user_model.User(
+    db_user = Recruiter(
         user_name=existing_user.user_name,
         email=existing_user.email,
         password=existing_user.password,
@@ -62,7 +62,7 @@ def user_login(user: UserLogin, db: Session):
     )
     print("Login Email", user.email)
     user_found = (
-        db.query(user_model.User).filter(user_model.User.email == user.email).first()
+        db.query(Recruiter).filter(Recruiter.email == user.email).first()
     )
 
     if not user_found:

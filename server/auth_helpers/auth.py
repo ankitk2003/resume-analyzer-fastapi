@@ -7,7 +7,7 @@ from fastapi import Depends, HTTPException, status
 from server.db.database import get_db
 from sqlalchemy.orm import Session
 from server.models.user_model import User
-
+from server.models.recruiter_model import Recruiter
 # imports for mail
 import smtplib
 import secrets
@@ -42,6 +42,29 @@ def create_access_token(data: dict):
 
 
 def get_current_user(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+):
+    credential_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials , please login again",
+        headers={"WWW_Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        user_id = payload.get("sub")
+        if user_id is None:
+            return credential_exception
+    except JWTError:
+        raise credential_exception
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise credential_exception
+    return user
+
+
+
+def get_current_recuiter(
     token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 ):
     credential_exception = HTTPException(
