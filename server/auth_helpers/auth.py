@@ -64,7 +64,7 @@ def get_current_user(
 
 
 
-def get_current_recuiter(
+def get_current_recruiter(
     token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 ):
     credential_exception = HTTPException(
@@ -80,7 +80,7 @@ def get_current_recuiter(
             return credential_exception
     except JWTError:
         raise credential_exception
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(Recruiter).filter(Recruiter.id == user_id).first()
     if user is None:
         raise credential_exception
     return user

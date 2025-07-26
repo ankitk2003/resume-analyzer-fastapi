@@ -7,7 +7,8 @@ from server.routes import user_routes,resume_routes,recruiter_routes
 from server.models.resume_model import Resume
 from server.models.user_model import User, Email
 from server.models.recruiter_model import Recruiter,RecruiterResume,JobDescription
-
+from server.services.store_jdembeddings import create_jd_collection
+from server.services.store_resume_embedding import create_resume_collection
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
@@ -36,6 +37,8 @@ app.add_middleware(
 def on_startup():
     Base.metadata.create_all(bind=engine)
     print(f"🚀 Connected to DB: {engine.url}")
+    create_jd_collection()
+    create_resume_collection()
 
 @app.get("/")
 def read_root():

@@ -2,26 +2,32 @@ from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Tabl
 from sqlalchemy.orm import relationship
 from server.db.database import Base
 from datetime import datetime
+from sqlalchemy.sql import func
+
 
 class Recruiter(Base):
     __tablename__ = "recruiters"
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, nullable=False)
-    user_name=Column(String(255))
-    password=Column(String(255))
+    user_name = Column(String(255))
+    password = Column(String(255))
     uploaded_jds = relationship("JobDescription", back_populates="recruiter")
+    uploaded_resumes = relationship(
+        "RecruiterResume", back_populates="recruiter"
+    )  # ✅ New
 
 
 class JobDescription(Base):
     __tablename__ = "job_descriptions"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(255))
-    description = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    title = Column(String)
+    content = Column(String)  # Raw JD text
     recruiter_id = Column(Integer, ForeignKey("recruiters.id"))
-    recruiter = relationship("Recruiter", back_populates="uploaded_jds")
+    qdrant_id = Column(String)  # UUID of the vector stored in Qdrant
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    recruiter = relationship("Recruiter", back_populates="uploaded_jds")  # <-- Add this
 
 
 class RecruiterResume(Base):
@@ -30,7 +36,6 @@ class RecruiterResume(Base):
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String(255))
     content = Column(Text)
-    embedding = Column(Text)  # You could change this to ARRAY(Float) if using PG vector
-    matched_jd_ids = Column(JSON)  # List of JD IDs matched to this resume
+    qdrant_id = Column(String)  # UUID of the vector stored in Qdrant
     uploaded_by = Column(Integer, ForeignKey("recruiters.id"), nullable=True)
-    recruiter = relationship("Recruiter")
+    recruiter = relationship("Recruiter", back_populates="uploaded_resumes")
