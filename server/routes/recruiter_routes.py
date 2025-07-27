@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, APIRouter, UploadFile, File
+from fastapi import FastAPI, Depends, APIRouter, UploadFile, File,HTTPException 
 from server.schemas.user_schema import UserSignup, UserLogin, UserResponse
 from sqlalchemy.orm import Session
 from typing import List
@@ -20,7 +20,8 @@ from server.services.get_embedding import get_embedding
 from server.services.store_jdembeddings import store_jd_embedding
 from server.services.store_resume_embedding import store_resume_embedding
 from server.models.recruiter_model import JobDescription, RecruiterResume
-
+from server.services.match_resume_with_jd import match_resumes_with_jd
+from uuid import UUID
 router = APIRouter(prefix="/recruiter", tags=["Recruiter"])
 
 
@@ -108,3 +109,43 @@ async def upload_resumes(
             results.append({"file": file.filename, "status": f"failed: {str(e)}"})
 
     return {"message": "Resume upload complete", "results": results}
+
+
+
+@router.get("/match-resumes/{jd_id}")
+def match_resumes(jd_id: int, db: Session = Depends(get_db), curr_recruiter=Depends(get_current_recruiter)):
+    jd = db.query(JobDescription).filter_by(id=jd_id, recruiter_id=curr_recruiter.id).first()
+    if not jd:
+        raise HTTPException(status_code=404, detail="JD not found")
+
+    jd_embedding = get_embedding(jd.content)  # Or fetch from stored Qdrant if saved
+
+    results = match_resumes_with_jd(jd_embedding, recruiter_id=curr_recruiter.id)
+    # return {"matches": results}
+    enriched_matches = []
+    for match in results:
+        resume_id = match.get("resume_id")
+        score = match.get("score")
+
+        resume = db.query(RecruiterResume).filter_by(qdrant_id=resume_id).first()
+        if resume:
+            enriched_matches.append({
+                "resume_id": resume_id,
+                "score": score,
+                "filename": resume.filename,
+                "resume_text_snippet": match.get("resume_text_snippet"),
+                "recruiter_id": resume.recruiter
+            })
+
+    return {"matches": enriched_matches}
+
+
+from qdrant_client import QdrantClient 
+
+@router.get("/debug/qdrant/resume-collection")
+def debug_resume_collection():
+    client = QdrantClient(host="localhost", port=6333)
+    jd_embeddings=client.get_collection(collection_name="jd_embeddings")
+    resume_embeddings=client.get_collection(collection_name="resume_embeddings")
+    print(jd_embeddings.points_count)
+    print(resume_embeddings.points_count)

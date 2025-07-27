@@ -1,8 +1,9 @@
 from qdrant_client import QdrantClient
-from qdrant_client.models import PointStruct,VectorParams,Distance
+from qdrant_client.models import PointStruct, VectorParams, Distance
 import uuid
 
 client = QdrantClient(host="localhost", port=6333)
+
 def create_resume_collection():
     client.recreate_collection(
         collection_name="resume_embeddings",
@@ -11,9 +12,10 @@ def create_resume_collection():
 
 collection_name = "resume_embeddings"
 
-def store_resume_embedding(embedding: list, recruiter_id: int, resume_text: str):
+def store_resume_embedding(embedding: list[float], recruiter_id: int, resume_text: str):
     resume_id = str(uuid.uuid4())
-    client.upload_points(
+    
+    client.upsert(
         collection_name=collection_name,
         points=[
             PointStruct(
@@ -21,9 +23,10 @@ def store_resume_embedding(embedding: list, recruiter_id: int, resume_text: str)
                 vector=embedding,
                 payload={
                     "recruiter_id": recruiter_id,
+                    "resume_id": resume_id,  # optional but helpful
                     "resume_text": resume_text
                 }
             )
         ]
     )
-    return {"resume_id": resume_id}
+    return {"status": "success", "resume_id": resume_id}
