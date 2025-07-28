@@ -13,7 +13,7 @@ from server.auth_helpers.auth import (
 
 def sign_up(user: UserSignup, db: Session):
     existing_user = (
-        db.query(user_model.Email).filter(user_model.User.email == user.email).first()
+        db.query(user_model.User).filter(user_model.User.email == user.email).first()
     )
     if existing_user:
         return None

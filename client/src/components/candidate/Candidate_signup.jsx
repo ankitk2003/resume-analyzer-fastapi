@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 import { loadingState } from '../../recoil/userAtom';
+import axios from 'axios'
 function CandidateSignup() {
   const [formData, setFormData] = useState({
     username: '',
@@ -9,8 +10,8 @@ function CandidateSignup() {
     password: '',
   });
   const setLoading = useSetRecoilState(loadingState);
-
-
+  const navigate=useNavigate()
+  const BASE_URL=import.meta.env.VITE_API_BASE_URL
   const handleChange = (e) => {
     setFormData(prev => ({
       ...prev,
@@ -18,11 +19,31 @@ function CandidateSignup() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Signup Data:', formData);
-    // TODO: Send formData to backend
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  console.log('Signup Data:', formData);
+
+  try {
+    setLoading(true)
+    const res = await axios.post(`${BASE_URL}/user/sign-up`, {
+      user_name: formData.username,
+      email: formData.email,
+      password: formData.password,
+    });
+
+    console.log('Signup success:', res.data);
+    localStorage.setItem("role","candidate")
+        navigate("/verify-otp")
+
+    // Optionally redirect or show a success message
+  } catch (error) {
+    console.error('Signup error:', error.response?.data || error.message);
+    // Optionally show error to the user
+  }
+  finally{
+    setLoading(false)
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-slate-50 to-teal-100 flex items-center justify-center p-6">

@@ -16,7 +16,8 @@ def sign_up(user: UserSignup, db: Session):
         db.query(Recruiter.email).filter(Recruiter.email == user.email).first()
     )
     if existing_user:
-        return None
+        raise HTTPException(status_code=409, detail="Email already registered")
+
     otp = send_mail(user.email)
     if otp is None:
         return {"message": "error in email function"}

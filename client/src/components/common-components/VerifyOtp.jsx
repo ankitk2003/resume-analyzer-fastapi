@@ -1,18 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useSetRecoilState } from "recoil";
+import { useNavigate } from "react-router-dom";
+import { loadingState } from "../../recoil/userAtom";
+import axios from "axios";
 
 function VerifyOtp() {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState("");
+  const setLoading = useSetRecoilState(loadingState);
+  const navigate = useNavigate();
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Entered OTP:', otp);
-    // TODO: Send OTP to backend for verification
+    const role = localStorage.getItem("role");
+    console.log("Entered OTP:", otp, "Role:", role);
+
+    try {
+      setLoading(true);
+      const endpoint =
+        role === "recruiter" ? "/recruiter/verify-otp" : "/user/verify-otp";
+
+      const res = await axios.post(`${BASE_URL}${endpoint}`, {
+        otp,
+      });
+
+      console.log("OTP Verification success:", res.data);
+      const token = res.data.access_token;
+      localStorage.setItem("token", token);
+      navigate("/recruiter-dashboard");
+    } catch (error) {
+      console.error("OTP verification error:", error.response?.data || error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-slate-50 to-teal-100 flex items-center justify-center p-6">
       <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Verify OTP</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          Verify OTP
+        </h2>
 
         <p className="text-sm text-gray-600 text-center mb-6">
           Enter the 6-digit code sent to your email.

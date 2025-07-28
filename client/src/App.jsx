@@ -6,6 +6,7 @@ import Recruiter_signup from "./components/recruiter/recruiter_signup";
 import Candidate_signup from "./components/candidate/candidate_signup";
 import Candidate_login from "./components/candidate/candidate_login";
 import GlobalLoader from "./components/common-components/GlobalLoader";
+import VerifyOtp from "./components/common-components/VerifyOtp";
 function App() {
   return (
     <>
@@ -16,6 +17,7 @@ function App() {
           <Route path="recruiter-signup" element={<Recruiter_signup />} />
           <Route path="candidate-signup" element={<Candidate_signup />} />
           <Route path="candidate-login" element={<Candidate_login />} />
+          <Route path="/verify-otp" element={<VerifyOtp/>}></Route>
         </Route>
       </Routes>
       <GlobalLoader/>

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, APIRouter, UploadFile, File,HTTPException 
-from server.schemas.user_schema import UserSignup, UserLogin, UserResponse
+from server.schemas.user_schema import UserSignup, UserLogin, UserResponse ,OtpVerifyRequest
+
 from sqlalchemy.orm import Session
 from typing import List
 from server.db.database import get_db
@@ -32,8 +33,8 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
 
 
 @router.post("/verify-otp")
-def verify_otp(otp: int, db: Session = Depends(get_db)):
-    verify_message = verify_user_by_otp(otp, db)
+def verify_otp(payload: OtpVerifyRequest, db: Session = Depends(get_db)):
+    verify_message = verify_user_by_otp(payload.otp, db)
     return verify_message
 
 
