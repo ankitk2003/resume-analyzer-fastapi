@@ -24,6 +24,7 @@ function Candidate_login() {
       });
 
       localStorage.setItem("token", res.data.access_token);
+      localStorage.setItem("role","candidate")
       console.log("Login success:", res.data);
 
       navigate("/candidate-dashboard");

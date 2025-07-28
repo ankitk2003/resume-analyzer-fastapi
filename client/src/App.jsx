@@ -7,6 +7,11 @@ import Candidate_signup from "./components/candidate/candidate_signup";
 import Candidate_login from "./components/candidate/candidate_login";
 import GlobalLoader from "./components/common-components/GlobalLoader";
 import VerifyOtp from "./components/common-components/VerifyOtp";
+import CandidateDashboard from "./components/candidate/CandidateDashboard";
+import CandidateProfile from "./components/candidate/CandidateProfile";
+import AuthHoc from "./components/common-components/AuthHoc";
+const ProtectedCandidateDashboard = AuthHoc(CandidateDashboard);
+const ProtectedCandidateProfile = AuthHoc(CandidateProfile);
 function App() {
   return (
     <>
@@ -17,10 +22,18 @@ function App() {
           <Route path="recruiter-signup" element={<Recruiter_signup />} />
           <Route path="candidate-signup" element={<Candidate_signup />} />
           <Route path="candidate-login" element={<Candidate_login />} />
-          <Route path="/verify-otp" element={<VerifyOtp/>}></Route>
+          <Route path="/verify-otp" element={<VerifyOtp />}></Route>
+          <Route
+            path="/candidate-dashboard"
+            element={<ProtectedCandidateDashboard/>}
+          ></Route>
+          <Route
+            path="/candidate-profile"
+            element={<ProtectedCandidateProfile />}
+          ></Route>
         </Route>
       </Routes>
-      <GlobalLoader/>
+      <GlobalLoader />
     </>
   );
 }

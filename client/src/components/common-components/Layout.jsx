@@ -15,7 +15,7 @@ function Layout() {
         <ul className="flex gap-6 text-gray-700 font-medium">
           <li><Link to="/" className="hover:text-blue-600">Home</Link></li>
           <li><Link to="/about" className="hover:text-blue-600">About</Link></li>
-          <li><Link to="/profile" className="hover:text-blue-600">Profile</Link></li>
+          <li><Link to="/candidate-profile" className="hover:text-blue-600">Profile</Link></li>
         </ul>
       </nav>
 
