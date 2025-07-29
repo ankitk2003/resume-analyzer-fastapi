@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useSetRecoilState, useRecoilValue } from "recoil";
 
 function RecruiterDashboard() {
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [jdFile, setJdFile] = useState(null);
   const [jdId, setJdId] = useState(null);
   const [resumeFiles, setResumeFiles] = useState([]);
@@ -12,7 +13,7 @@ function RecruiterDashboard() {
   const [top_k, setTopK] = useState(5); // NEW: Default top_k value
   const setLoading = useSetRecoilState(loadingState);
   const loading = useRecoilValue(loadingState);
-  const navigate=useNavigate()
+  const navigate = useNavigate();
   const handleJdChange = (e) => setJdFile(e.target.files[0]);
   const handleResumesChange = (e) => setResumeFiles(Array.from(e.target.files));
 
@@ -25,7 +26,7 @@ function RecruiterDashboard() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/recruiter/upload-jd`, {
+      const response = await fetch(`${BASE_URL}/recruiter/upload-jd`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -43,7 +44,8 @@ function RecruiterDashboard() {
   };
 
   const uploadResumes = async () => {
-    if (resumeFiles.length === 0 || !jdId) return alert("Please upload JD first and select resumes");
+    if (resumeFiles.length === 0 || !jdId)
+      return alert("Please upload JD first and select resumes");
 
     const formData = new FormData();
     resumeFiles.forEach((file) => formData.append("files", file));
@@ -51,7 +53,7 @@ function RecruiterDashboard() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/recruiter/upload-resumes`, {
+      await fetch(`${BASE_URL}/recruiter/upload-resumes`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -75,7 +77,7 @@ function RecruiterDashboard() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/recruiter/match-resumes/${jdId}/${top_k}`,
+        `${BASE_URL}/recruiter/match-resumes/${jdId}/${top_k}`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
@@ -93,17 +95,18 @@ function RecruiterDashboard() {
     }
   };
 
-  const handleLogout=()=>{
-    localStorage.removeItem("token")
-        localStorage.removeItem("role")
-        navigate("/")
-
-  }
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Recruiter Dashboard</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          Recruiter Dashboard
+        </h2>
 
         {/* Loading Spinner */}
         {loading && (
@@ -114,7 +117,9 @@ function RecruiterDashboard() {
 
         {/* JD Upload */}
         <div className="mb-6">
-          <label className="block text-lg font-medium text-gray-700 mb-2">Upload Job Description (JD)</label>
+          <label className="block text-lg font-medium text-gray-700 mb-2">
+            Upload Job Description (JD)
+          </label>
           <input
             type="file"
             accept=".pdf,.doc,.docx"
@@ -122,7 +127,9 @@ function RecruiterDashboard() {
             disabled={loading}
             className="w-full border border-gray-300 rounded-lg p-2 text-sm file:bg-blue-100 file:border-0 file:px-4 file:py-2 file:rounded file:text-blue-800 cursor-pointer"
           />
-          {jdFile && <p className="text-sm text-green-600 mt-2">📄 {jdFile.name}</p>}
+          {jdFile && (
+            <p className="text-sm text-green-600 mt-2">📄 {jdFile.name}</p>
+          )}
           <button
             onClick={uploadJD}
             disabled={loading}
@@ -134,7 +141,9 @@ function RecruiterDashboard() {
 
         {/* Resume Upload */}
         <div className="mb-6">
-          <label className="block text-lg font-medium text-gray-700 mb-2">Upload Resumes</label>
+          <label className="block text-lg font-medium text-gray-700 mb-2">
+            Upload Resumes
+          </label>
           <input
             type="file"
             multiple
@@ -162,7 +171,9 @@ function RecruiterDashboard() {
         {/* Top-K Input */}
         {jdId && resumesUploaded && (
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Number of Top Matches (Top-K)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Number of Top Matches (Top-K)
+            </label>
             <input
               type="number"
               min="1"
@@ -191,7 +202,9 @@ function RecruiterDashboard() {
         {/* Display Matches */}
         {matchedResumes.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">🔍 Matched Resumes:</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+              🔍 Matched Resumes:
+            </h3>
             <div className="space-y-3">
               {matchedResumes.map((resume, idx) => (
                 <div
@@ -199,8 +212,12 @@ function RecruiterDashboard() {
                   className="border p-3 rounded-lg shadow-sm bg-gray-50 flex justify-between items-center"
                 >
                   <div>
-                    <div className="text-base font-medium text-gray-800">📄 {resume.filename}</div>
-                    <div className="text-sm text-gray-600">Score: {(resume.score * 10).toFixed(4)}</div>
+                    <div className="text-base font-medium text-gray-800">
+                      📄 {resume.filename}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Score: {(resume.score * 10).toFixed(4)}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -208,9 +225,16 @@ function RecruiterDashboard() {
           </div>
         )}
 
-        <p className="mt-2 mb-2 opacity-60">[Note: The score is between 0 to 10 , where 0 is minnimum and 10 is maximum]</p>
-                 <button onClick={handleLogout} className="bg-green-600 rounded-sm p-1 text-white hover:cursor-pointer">Logout</button>
-
+        <p className="mt-2 mb-2 opacity-60">
+          [Note: The score is between 0 to 10 , where 0 is minnimum and 10 is
+          maximum]
+        </p>
+        <button
+          onClick={handleLogout}
+          className="bg-green-600 rounded-sm p-1 text-white hover:cursor-pointer"
+        >
+          Logout
+        </button>
       </div>
     </div>
   );
