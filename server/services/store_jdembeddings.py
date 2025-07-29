@@ -1,9 +1,12 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, Distance, VectorParams
 import uuid
+import os
 
-client = QdrantClient(host="localhost", port=6333)
-
+client =  QdrantClient(
+    url=os.getenv("QDRANT_URL"),
+    api_key=os.getenv("QDRANT_API_KEY")
+)
 # Only run this once (at startup or through CLI script)
 def create_jd_collection():
     client.recreate_collection(

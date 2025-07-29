@@ -1,5 +1,10 @@
-from fastapi import FastAPI, Depends, APIRouter, UploadFile, File,HTTPException 
-from server.schemas.user_schema import UserSignup, UserLogin, UserResponse ,OtpVerifyRequest
+from fastapi import FastAPI, Depends, APIRouter, UploadFile, File, HTTPException
+from server.schemas.user_schema import (
+    UserSignup,
+    UserLogin,
+    UserResponse,
+    OtpVerifyRequest,
+)
 
 from sqlalchemy.orm import Session
 from typing import List
@@ -23,6 +28,8 @@ from server.services.store_resume_embedding import store_resume_embedding
 from server.models.recruiter_model import JobDescription, RecruiterResume
 from server.services.match_resume_with_jd import match_resumes_with_jd
 from uuid import UUID
+from server.services.delete_resume import delete_old_resumes_for_recruiter
+
 router = APIRouter(prefix="/recruiter", tags=["Recruiter"])
 
 
@@ -83,7 +90,7 @@ async def upload_resumes(
     db: Session = Depends(get_db),
 ):
     results = []
-
+    delete_old_resumes_for_recruiter(curr_recruiter.id)
     for file in files:
         try:
             file_data = handle_pdf_upload(file, curr_recruiter)
@@ -112,16 +119,29 @@ async def upload_resumes(
     return {"message": "Resume upload complete", "results": results}
 
 
+@router.get("/match-resumes/{jd_id}/{top_k}")
+def match_resumes(
+    jd_id: int,
+    top_k: int,
+    db: Session = Depends(get_db),
+    curr_recruiter=Depends(get_current_recruiter),
+):
 
-@router.get("/match-resumes/{jd_id}")
-def match_resumes(jd_id: int, db: Session = Depends(get_db), curr_recruiter=Depends(get_current_recruiter)):
-    jd = db.query(JobDescription).filter_by(id=jd_id, recruiter_id=curr_recruiter.id).first()
+    
+
+    jd = (
+        db.query(JobDescription)
+        .filter_by(id=jd_id, recruiter_id=curr_recruiter.id)
+        .first()
+    )
     if not jd:
         raise HTTPException(status_code=404, detail="JD not found")
 
     jd_embedding = get_embedding(jd.content)  # Or fetch from stored Qdrant if saved
 
-    results = match_resumes_with_jd(jd_embedding, recruiter_id=curr_recruiter.id)
+    results = match_resumes_with_jd(
+        jd_embedding, recruiter_id=curr_recruiter.id, top_k=top_k
+    )
     # return {"matches": results}
     enriched_matches = []
     for match in results:
@@ -130,23 +150,26 @@ def match_resumes(jd_id: int, db: Session = Depends(get_db), curr_recruiter=Depe
 
         resume = db.query(RecruiterResume).filter_by(qdrant_id=resume_id).first()
         if resume:
-            enriched_matches.append({
-                "resume_id": resume_id,
-                "score": score,
-                "filename": resume.filename,
-                "resume_text_snippet": match.get("resume_text_snippet"),
-                "recruiter_id": resume.recruiter
-            })
+            enriched_matches.append(
+                {
+                    "resume_id": resume_id,
+                    "score": score,
+                    "filename": resume.filename,
+                    "resume_text_snippet": match.get("resume_text_snippet"),
+                    "recruiter_id": resume.recruiter,
+                }
+            )
 
     return {"matches": enriched_matches}
 
 
-from qdrant_client import QdrantClient 
+from qdrant_client import QdrantClient
+
 
 @router.get("/debug/qdrant/resume-collection")
 def debug_resume_collection():
     client = QdrantClient(host="localhost", port=6333)
-    jd_embeddings=client.get_collection(collection_name="jd_embeddings")
-    resume_embeddings=client.get_collection(collection_name="resume_embeddings")
+    jd_embeddings = client.get_collection(collection_name="jd_embeddings")
+    resume_embeddings = client.get_collection(collection_name="resume_embeddings")
     print(jd_embeddings.points_count)
     print(resume_embeddings.points_count)

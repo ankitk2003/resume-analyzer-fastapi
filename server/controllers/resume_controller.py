@@ -49,7 +49,7 @@ def handle_pdf_upload(file: UploadFile, current_user) -> dict:
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 
 import re

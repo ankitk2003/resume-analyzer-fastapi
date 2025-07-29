@@ -1,8 +1,12 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 import uuid
+import os
 
-client = QdrantClient(host="localhost", port=6333)
+client = QdrantClient(
+    url=os.getenv("QDRANT_URL"),
+    api_key=os.getenv("QDRANT_API_KEY")
+)
 
 def create_resume_collection():
     client.recreate_collection(

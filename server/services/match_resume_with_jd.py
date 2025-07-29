@@ -2,15 +2,18 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue, SearchRequest 
 from typing import List
 import numpy as np
-
+import os
 
 # collection_info = client.get_collection(collection_name="resume_embeddings")
 # print(collection_info)
 
 # Assuming same embedding size and distance metric used
-qdrant = QdrantClient(host="localhost", port=6333)
+qdrant =  QdrantClient(
+    url=os.getenv("QDRANT_URL"),
+    api_key=os.getenv("QDRANT_API_KEY")
+)
 
-def match_resumes_with_jd(jd_embedding: List[float], recruiter_id: int, top_k: int = 5):
+def match_resumes_with_jd(jd_embedding: List[float], recruiter_id: int, top_k:int):
     """
     Compare JD embedding with all resume embeddings for the current recruiter.
     Return top-k most similar resumes with similarity score.

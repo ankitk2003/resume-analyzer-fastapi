@@ -10,8 +10,10 @@ import VerifyOtp from "./components/common-components/VerifyOtp";
 import CandidateDashboard from "./components/candidate/CandidateDashboard";
 import CandidateProfile from "./components/candidate/CandidateProfile";
 import AuthHoc from "./components/common-components/AuthHoc";
+import RecruiterDashboard from "./components/recruiter/RecruiterDashboard";
 const ProtectedCandidateDashboard = AuthHoc(CandidateDashboard);
 const ProtectedCandidateProfile = AuthHoc(CandidateProfile);
+const ProtectedRecruiterDashboard=AuthHoc(RecruiterDashboard)
 function App() {
   return (
     <>
@@ -31,6 +33,8 @@ function App() {
             path="/candidate-profile"
             element={<ProtectedCandidateProfile />}
           ></Route>
+
+          <Route path="/recruiter-dashboard" element={<ProtectedRecruiterDashboard/>}></Route>
         </Route>
       </Routes>
       <GlobalLoader />

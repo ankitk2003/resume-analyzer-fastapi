@@ -24,6 +24,7 @@ function Recruiter_login() {
       });
 
       localStorage.setItem("token", res.data.access_token);
+      localStorage.setItem("role","recruiter")
       console.log("Recruiter login successful:", res.data);
 
       navigate("/recruiter-dashboard");
