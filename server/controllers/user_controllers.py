@@ -27,7 +27,7 @@ def sign_up(user: UserSignup, db: Session):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return {"Message otp  Successfully", otp}
+    return {"otp": otp,"message":"OTP sent successfully"}
 
 
 def verify_user_by_otp(otp: int, db: Session):
@@ -35,7 +35,8 @@ def verify_user_by_otp(otp: int, db: Session):
         db.query(user_model.Email).filter(user_model.Email.otp == otp).first()
     )
     if not existing_user:
-        return {"message": "register fisrt"}
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+
     db_user = user_model.User(
         user_name=existing_user.user_name,
         email=existing_user.email,
